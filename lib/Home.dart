@@ -2,41 +2,63 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-class Home extends StatelessWidget {
-  const Home({Key? key}) : super(key: key);
+import 'Post.dart';
 
-  Future<Map<String, dynamic>> _recuperarPreco() async {
-    String url = "https://blockchain.info/ticker";
-    http.Response response = await http.get(Uri.parse(url));
-    return json.decode(response.body);
+class Home extends StatelessWidget {
+  String url = "https://jsonplaceholder.typicode.com";
+
+  Future<List<Post>> _recuperarPostagens() async {
+    http.Response response = await http.get(Uri.parse(url + "/posts"));
+    var dadosJson = json.decode(response.body);
+    List<Post> postagens = List<Post>.generate(
+      dadosJson.length,
+      (index) => Post(
+        dadosJson[index]["userId"],
+        dadosJson[index]["id"],
+        dadosJson[index]["title"],
+        dadosJson[index]["body"],
+      ),
+    );
+    return postagens;
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Map>(
-      future: _recuperarPreco(),
-      builder: (context, snapshot) {
-        String resultado = "carregando";
-        switch (snapshot.connectionState) {
-          case ConnectionState.none:
-            return Text("Conexão None");
-          case ConnectionState.waiting:
-            resultado ="Cartregando";
-            return CircularProgressIndicator();
-          case ConnectionState.active:
-            return Text("Conexão Active");
-          case ConnectionState.done:
-            if (snapshot.hasError) {
-              return Text("Erro: ${snapshot.error}");
-            } else {
-              double valor = snapshot.data?["BRL"]["buy"];
-              resultado = "Preço do Bitcoin ${valor.toString()}";
-              return Center(
-                child: Text(resultado),
-              );
-            }
-        }
-      },
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Consumo de API"),
+      ),
+      body: FutureBuilder<List<Post>>(
+        future: _recuperarPostagens(),
+        builder: (context, snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.none:
+              return Text("Conexão None");
+            case ConnectionState.waiting:
+              return Center(child: CircularProgressIndicator());
+            case ConnectionState.active:
+            case ConnectionState.done:
+              if (snapshot.hasError) {
+                return Text("Erro: ${snapshot.error}");
+              } else {
+                List<Post>? posts = snapshot.data;
+                if (posts != null && posts.isNotEmpty) {
+                  return ListView.builder(
+                    itemCount: posts.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        title: Text(posts[index].title),
+                        subtitle: Text(posts[index].body),
+                      );
+                    },
+                  );
+                } else {
+                  return Center(child: Text("Nenhuma postagem encontrada"));
+                }
+              }
+          }
+        },
+      ),
     );
   }
 }
