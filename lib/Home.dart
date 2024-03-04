@@ -16,10 +16,12 @@ class Home extends StatelessWidget {
     return FutureBuilder<Map>(
       future: _recuperarPreco(),
       builder: (context, snapshot) {
+        String resultado = "carregando";
         switch (snapshot.connectionState) {
           case ConnectionState.none:
             return Text("Conexão None");
           case ConnectionState.waiting:
+            resultado ="Cartregando";
             return CircularProgressIndicator();
           case ConnectionState.active:
             return Text("Conexão Active");
@@ -27,8 +29,11 @@ class Home extends StatelessWidget {
             if (snapshot.hasError) {
               return Text("Erro: ${snapshot.error}");
             } else {
-              // Aqui você pode retornar o widget que deseja baseado no resultado do Future
-              return Text("Valor: ${snapshot.data}");
+              double valor = snapshot.data?["BRL"]["buy"];
+              resultado = "Preço do Bitcoin ${valor.toString()}";
+              return Center(
+                child: Text(resultado),
+              );
             }
         }
       },
