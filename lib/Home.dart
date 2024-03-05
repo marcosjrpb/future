@@ -22,28 +22,61 @@ class Home extends StatelessWidget {
     return postagens;
   }
 
-  _post()async{
+  _post() async {
+    Post post = Post(120, null, "Titulo", "Corpo da Postagem");
     var corpo = jsonEncode(
-      {
-        "userId": 120,
-        "id": null,
-        "title": "titulo",
-        "body":"Corpo da Postagem"
-      },
+      post.toJson(),
     );
-
     http.Response response = await http.post(
       Uri.parse(url + "/posts"),
-      headers:{'Content-type': 'application/json; charset=UTF-8',},
+      headers: {
+        'Content-type': 'application/json; charset=UTF-8',
+      },
       body: corpo,
-
     );
     print("resposta: ${response.statusCode}");
     print("resposta: ${response.body}");
   }
-  _put(){}
-  _patch() {}
-  _delete(){}
+
+  _put() async {
+    Post post = Post(120, null, "Titulo", "Corpo da Postagem");
+    var corpo = jsonEncode(
+      post.toJson(),
+    );
+    http.Response response = await http.patch(
+      Uri.parse(url + "/posts/2"),
+      headers: {
+        'Content-type': 'application/json; charset=UTF-8',
+      },
+      body: corpo,
+    );
+    print("resposta: ${response.statusCode}");
+    print("resposta: ${response.body}");
+  }
+
+  _patch() async {
+    Post post = Post(120, null, "Titulo", "Corpo da Postagem");
+    var corpo = jsonEncode(
+      post.toJson(),
+    );
+    http.Response response = await http.put(
+      Uri.parse(url + "/posts/2"),
+      headers: {
+        'Content-type': 'application/json; charset=UTF-8',
+      },
+      body: corpo,
+    );
+    print("resposta: ${response.statusCode}");
+    print("resposta: ${response.body}");
+  }
+
+  _delete() async {
+    http.Response response = await http.delete(
+      Uri.parse(url + "/posts/2"),
+    );
+    print("resposta: ${response.statusCode}");
+    print("resposta: ${response.body}");
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,15 +96,19 @@ class Home extends StatelessWidget {
               children: [
                 ElevatedButton(
                   onPressed: _post,
-                  child: Text("Salvar"),
+                  child: Text("Post"),
                 ),
                 ElevatedButton(
-                  onPressed: _post,
-                  child: Text("Atualizar"),
+                  onPressed: _put,
+                  child: Text("Put"),
                 ),
                 ElevatedButton(
-                  onPressed: _post,
-                  child: Text("Remover"),
+                  onPressed: _patch,
+                  child: Text("Patch"),
+                ),
+                ElevatedButton(
+                  onPressed: _delete,
+                  child: Text("Delete"),
                 ),
               ],
             ),
@@ -95,8 +132,8 @@ class Home extends StatelessWidget {
                             itemCount: posts.length,
                             itemBuilder: (context, index) {
                               return ListTile(
-                                title: Text(posts[index].title),
-                                subtitle: Text(posts[index].body),
+                                title: Text(posts[index].title ?? ""),
+                                subtitle: Text(posts[index].body ?? ""),
                               );
                             },
                           );
